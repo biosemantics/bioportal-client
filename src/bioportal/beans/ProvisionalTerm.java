@@ -13,9 +13,8 @@ public class ProvisionalTerm {
 
 	public ProvisionalTerm() { }
 
-	public ProvisionalTerm(String localId, String term, String termType, String termCategory, String definition, String superclass,
-			String synonyms, String ontologyids, String submittedby,
-			String temporaryid, String permanentid, String source) {
+	public ProvisionalTerm(String term, String definition, String superclass, String synonyms, String ontologyids, String submittedby,
+			String temporaryid, String permanentid) {
 		super();
 		this.term = term;
 		this.definition = definition;
