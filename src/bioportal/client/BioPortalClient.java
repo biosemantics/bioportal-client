@@ -41,7 +41,7 @@ public class BioPortalClient {
 		this.apiKey = apiKey;
 		ClientConfig clientConfig = new DefaultClientConfig();
 		client = Client.create(clientConfig);
-		client.addFilter(new LoggingFilter(System.out));
+		//client.addFilter(new LoggingFilter(System.out));
 	}
 	
 	/**
@@ -60,6 +60,15 @@ public class BioPortalClient {
 	    return webResource.queryParams(queryParams).get(Success.class);
 	}
 	
+	public String getProvisionalTermReturnString(String termId) throws JAXBException {
+		String url = this.apiUrl + "provisional";
+	    WebResource webResource = client.resource(url);
+	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
+	    queryParams.add("termid", termId);
+	    queryParams.add("apikey", this.apiKey);
+	    return webResource.queryParams(queryParams).get(String.class);
+	}
+	
 	/**
 	 * Get all available provisional terms using a paged interface.
 	 * @throws JAXBException when returned XML cannot be parsed into schema, 
@@ -71,6 +80,14 @@ public class BioPortalClient {
 	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
 	    queryParams.add("apikey", this.apiKey);	    
 	    return webResource.queryParams(queryParams).get(Success.class);
+	}
+	
+	public String getProvisionalTermsReturnString() throws JAXBException {
+		String url = this.apiUrl + "provisional";
+	    WebResource webResource = client.resource(url);
+	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
+	    queryParams.add("apikey", this.apiKey);	    
+	    return webResource.queryParams(queryParams).get(String.class);
 	}
 	
 	/**
@@ -106,6 +123,32 @@ public class BioPortalClient {
 	    return webResource.queryParams(queryParams).get(Success.class);
 	}
 	
+	public String getProvisionalTermsReturnString(Filter filter) throws JAXBException {
+		String url = this.apiUrl + "provisional";
+	    WebResource webResource = client.resource(url);
+	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
+	    queryParams.add("apikey", this.apiKey);
+	    
+	    if(filter.hasCreatedEndDate())
+	    	queryParams.add("createdenddate", filter.getCreatedEndDate());
+	    if(filter.hasImplementedTermsOnly())
+	    	queryParams.add("implementedtermsonly", filter.getImplementedTermsOnly());
+	    if(filter.hasOntologyIds())
+	    	queryParams.add("ontologyids", filter.getOntologyIds());
+	    if(filter.hasPageNum())
+	    	queryParams.add("pagenum", filter.getPageNum());
+	    if(filter.hasPageSize())
+	    	queryParams.add("pagesize", filter.getPageSize());
+	    if(filter.hasSubmittedBy())
+	    	queryParams.add("submittedby", filter.getSubmittedBy());
+	    if(filter.hasUpdatedEndDate())
+	    	queryParams.add("updatedenddate", filter.getUpdatedEndDate());
+	    if(filter.hasUpdatedStartDate())
+	    	queryParams.add("updatedstartdate", filter.getUpdatedStartDate());
+	    
+	    return webResource.queryParams(queryParams).get(String.class);
+	}
+	
 	/**
 	 * Create a provisional term.
 	 * @return Success
@@ -135,6 +178,30 @@ public class BioPortalClient {
 	    	formData.add("superclass", superclassPrefix + provisionalTerm.getSuperclass());
 	    
 	    return webResource.queryParams(queryParams).type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(Success.class, formData);
+	}
+	
+	public String createProvisionalTermReturnString(ProvisionalTerm provisionalTerm) throws JAXBException, IllegalArgumentException {
+		String url = this.apiUrl + "provisional";
+	    WebResource webResource = client.resource(url);
+	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
+	    queryParams.add("apikey", this.apiKey);
+	    
+	    MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
+	    formData.add("submittedby", this.userId);
+	    if(provisionalTerm.hasTerm() && provisionalTerm.hasDefinition()) {
+	    	formData.add("preferredname", provisionalTerm.getTerm());
+	    	formData.add("definition", provisionalTerm.getDefinition());
+	    } else {
+	    	throw new IllegalArgumentException();
+	    }
+	    if(provisionalTerm.hasOntologyIds())
+	    	formData.add("ontologyids", provisionalTerm.getOntologyids());
+	    if(provisionalTerm.hasSynonyms())
+	    	formData.add("synonyms", provisionalTerm.getSynonyms());
+	    if(provisionalTerm.hasSuperClass())
+	    	formData.add("superclass", superclassPrefix + provisionalTerm.getSuperclass());
+	    
+	    return webResource.queryParams(queryParams).type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(String.class, formData);
 	}
 	
 	/**
@@ -169,6 +236,30 @@ public class BioPortalClient {
 	    return webResource.queryParams(queryParams).put(Success.class);
 	}
 	
+	public String updateProvisionalTermReturnString(String termId, ProvisionalTerm provisionalTerm) throws JAXBException {	    
+		String url = this.apiUrl + "provisional";
+	    WebResource webResource = client.resource(url);
+	    
+	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
+	    queryParams.add("apikey", this.apiKey);
+	    queryParams.add("termid", termId);
+	    queryParams.add("submittedby", this.userId);
+	    if(provisionalTerm.hasTerm())
+	    	queryParams.add("preferredname", provisionalTerm.getTerm());
+	    if(provisionalTerm.hasDefinition()) 
+	    	queryParams.add("definition", provisionalTerm.getDefinition());
+	    if(provisionalTerm.hasOntologyIds())
+	    	queryParams.add("ontologyids", provisionalTerm.getOntologyids());
+	    if(provisionalTerm.hasPermanentId())
+	    	queryParams.add("permanentid", provisionalTerm.getPermanentid());
+	    if(provisionalTerm.hasSuperClass())
+	    	queryParams.add("superclass", superclassPrefix + provisionalTerm.getSuperclass());
+	    if(provisionalTerm.hasSynonyms())
+	    	queryParams.add("synonyms", provisionalTerm.getSynonyms());
+	    
+	    return webResource.queryParams(queryParams).put(String.class);
+	}
+	
 	/**
 	 * Delete a provisional term.
 	 * @return Success
@@ -185,6 +276,15 @@ public class BioPortalClient {
 	    return webResource.queryParams(queryParams).delete(Success.class);
 	}
 	
+	public String deleteProvisionalTermReturnString(String termId) throws JAXBException {
+		String url = this.apiUrl + "provisional";
+	    WebResource webResource = client.resource(url);
+	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
+	    queryParams.add("termid", termId);
+	    queryParams.add("apikey", this.apiKey);
+	    return webResource.queryParams(queryParams).delete(String.class);
+	}
+	
 	public static void main(String[] args) throws JAXBException, IOException {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 		Properties properties = new Properties(); 
@@ -193,6 +293,13 @@ public class BioPortalClient {
 		String userId = properties.getProperty("bioportalUserId");
 		String apiKey = properties.getProperty("bioportalApiKey");
 		BioPortalClient bioPortalClient = new BioPortalClient(url, userId, apiKey);	
+		
+		ProvisionalTerm provisionalTerm = new ProvisionalTerm();
+		provisionalTerm.setTerm("test name");
+		provisionalTerm.setDefinition("this is a test definition");
+		String response = bioPortalClient.createProvisionalTermReturnString(provisionalTerm);
+		
+		System.out.println("here: " + response);
 		
 		/*String[] ids = new String[] { 
 				"http://purl.bioontology.org/ontology/provisional/5325b90e-0334-48a1-98a5-3f414c146276"
@@ -204,13 +311,13 @@ public class BioPortalClient {
 		
 		
 		//for(int i=0; i<56; i++) {
-			Filter filter = new Filter();
+		/*	Filter filter = new Filter();
 			filter.setSubmittedBy(userId);
 			//filter.setPageSize("279");
 			//filter.setPageNum(String.valueOf(i));
 			//filter.setImplementedTermsOnly("true");
 			Success success = bioPortalClient.getProvisionalTerms(filter);
-			
+		*/	
 			//System.out.println("-----------------done-------------------");
 			//System.out.println(success.getData().getList());
 			//System.out.println(success.getData().getClassBean());
