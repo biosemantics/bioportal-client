@@ -6,7 +6,7 @@
 //
 
 
-package bioportal.beans.response;
+package edu.arizona.biosemantics.oto.bioportal.beans.response;
 
 import java.math.BigInteger;
 

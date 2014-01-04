@@ -6,7 +6,7 @@
 //
 
 
-package bioportal.beans.response;
+package edu.arizona.biosemantics.oto.bioportal.beans.response;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

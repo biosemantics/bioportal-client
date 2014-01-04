@@ -6,4 +6,4 @@
 //
 
 //@javax.xml.bind.annotation.XmlSchema(namespace = "http://bioontology.org/bioportal/classBeanSchema#", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
-package bioportal.beans.response;
+package edu.arizona.biosemantics.oto.bioportal.beans.response;

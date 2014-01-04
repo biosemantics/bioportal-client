@@ -6,8 +6,9 @@
 //
 
 
-package bioportal.beans.response;
+package edu.arizona.biosemantics.oto.bioportal.beans.response;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -29,9 +30,10 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;choice maxOccurs="unbounded" minOccurs="0">
- *           &lt;element ref="{http://bioontology.org/bioportal/classBeanSchema#}classBean" maxOccurs="unbounded" minOccurs="0"/>
- *           &lt;element name="string" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
+ *           &lt;element name="string" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *           &lt;element ref="{http://bioontology.org/bioportal/classBeanSchema#}list"/>
  *         &lt;/choice>
+ *         &lt;element ref="{http://bioontology.org/bioportal/classBeanSchema#}int" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -42,45 +44,72 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "classBeanOrString"
+    "stringOrList",
+    "_int"
 })
-@XmlRootElement(name = "list")
-public class List {
+@XmlRootElement(name = "entry")
+public class Entry {
 
     @XmlElements({
-        @XmlElement(name = "classBean", type = ClassBean.class),
+        @XmlElement(name = "list", type = edu.arizona.biosemantics.oto.bioportal.beans.response.List.class),
         @XmlElement(name = "string", type = String.class)
     })
-    protected java.util.List<Object> classBeanOrString;
+    protected java.util.List<Object> stringOrList;
+    @XmlElement(name = "int")
+    protected BigInteger _int;
 
     /**
-     * Gets the value of the classBeanOrString property.
+     * Gets the value of the stringOrList property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the classBeanOrString property.
+     * This is why there is not a <CODE>set</CODE> method for the stringOrList property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getClassBeanOrString().add(newItem);
+     *    getStringOrList().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link ClassBean }
+     * {@link beans.response.List }
      * {@link String }
      * 
      * 
      */
-    public java.util.List<Object> getClassBeanOrString() {
-        if (classBeanOrString == null) {
-            classBeanOrString = new ArrayList<Object>();
+    public java.util.List<Object> getStringOrList() {
+        if (stringOrList == null) {
+            stringOrList = new ArrayList<Object>();
         }
-        return this.classBeanOrString;
+        return this.stringOrList;
+    }
+
+    /**
+     * Gets the value of the int property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigInteger }
+     *     
+     */
+    public BigInteger getInt() {
+        return _int;
+    }
+
+    /**
+     * Sets the value of the int property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigInteger }
+     *     
+     */
+    public void setInt(BigInteger value) {
+        this._int = value;
     }
 
 }

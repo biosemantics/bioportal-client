@@ -1,4 +1,4 @@
-package bioportal.client;
+package edu.arizona.biosemantics.oto.bioportal.client;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -7,16 +7,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.xml.bind.JAXBException;
 
-import bioportal.beans.Filter;
-import bioportal.beans.ProvisionalTerm;
-import bioportal.beans.response.Success;
-
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.LoggingFilter;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
+
+import edu.arizona.biosemantics.oto.bioportal.beans.Filter;
+import edu.arizona.biosemantics.oto.bioportal.beans.ProvisionalTerm;
+import edu.arizona.biosemantics.oto.bioportal.beans.response.Success;
 
 /**
  * BioPortalClient provides access to BioPortals REST Web Services 

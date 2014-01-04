@@ -1,4 +1,4 @@
-package bioportal.beans;
+package edu.arizona.biosemantics.oto.bioportal.beans;
 
 public class Filter {
 

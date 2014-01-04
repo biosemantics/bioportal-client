@@ -6,13 +6,14 @@
 //
 
 
-package bioportal.beans.response;
+package edu.arizona.biosemantics.oto.bioportal.beans.response;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -27,7 +28,10 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{http://bioontology.org/bioportal/classBeanSchema#}entry" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;choice maxOccurs="unbounded" minOccurs="0">
+ *           &lt;element ref="{http://bioontology.org/bioportal/classBeanSchema#}classBean" maxOccurs="unbounded" minOccurs="0"/>
+ *           &lt;element name="string" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;/choice>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -38,40 +42,45 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "entry"
+    "classBeanOrString"
 })
-@XmlRootElement(name = "relations")
-public class Relations {
+@XmlRootElement(name = "list")
+public class List {
 
-    protected List<Entry> entry;
+    @XmlElements({
+        @XmlElement(name = "classBean", type = ClassBean.class),
+        @XmlElement(name = "string", type = String.class)
+    })
+    protected java.util.List<Object> classBeanOrString;
 
     /**
-     * Gets the value of the entry property.
+     * Gets the value of the classBeanOrString property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the entry property.
+     * This is why there is not a <CODE>set</CODE> method for the classBeanOrString property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getEntry().add(newItem);
+     *    getClassBeanOrString().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Entry }
+     * {@link ClassBean }
+     * {@link String }
      * 
      * 
      */
-    public List<Entry> getEntry() {
-        if (entry == null) {
-            entry = new ArrayList<Entry>();
+    public java.util.List<Object> getClassBeanOrString() {
+        if (classBeanOrString == null) {
+            classBeanOrString = new ArrayList<Object>();
         }
-        return this.entry;
+        return this.classBeanOrString;
     }
 
 }
