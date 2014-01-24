@@ -38,7 +38,7 @@ public class BioPortalClient {
 		this.apiKey = apiKey;
 	}
 	
-	public void open() {
+	public void open() {		
 		client = ClientBuilder.newBuilder().withConfig(new ClientConfig()).register(JacksonFeature.class).build();
 		client.register(new LoggingFilter(Logger.getAnonymousLogger(), true));
 		
@@ -84,11 +84,11 @@ public class BioPortalClient {
 	}
 	
 	public Future<ProvisionalClass> patchProvisionalClass(ProvisionalClass provisionalClass) {
-	    return this.getPatchInvoker(provisionalClass).method("PATCH", Entity.entity(provisionalClass, MediaType.APPLICATION_JSON), ProvisionalClass.class);
+	    return this.getPatchInvoker(provisionalClass).method("POST", Entity.entity(provisionalClass, MediaType.APPLICATION_JSON), ProvisionalClass.class);
 	}
 	
 	public void patchProvisionalClass(ProvisionalClass provisionalClass, InvocationCallback<ProvisionalClass> callback) {
-		this.getPatchInvoker(provisionalClass).method("PATCH", Entity.entity(provisionalClass, MediaType.APPLICATION_JSON), callback);
+		this.getPatchInvoker(provisionalClass).method("POST", Entity.entity(provisionalClass, MediaType.APPLICATION_JSON), callback);
 	}
 	
 	private AsyncInvoker getGetInvoker() {
@@ -101,11 +101,12 @@ public class BioPortalClient {
 	}
 	
 	private AsyncInvoker getPatchInvoker(ProvisionalClass provisionalClass) {
-		return target.path("provisional_classes").path(provisionalClass.getId()).request(MediaType.APPLICATION_JSON).header("Authorization", "apikey token=" + this.apiKey).async();
+		return target.path("provisional_classes").path(provisionalClass.getShortId()).request(MediaType.APPLICATION_JSON).header("Authorization", "apikey token=" + this.apiKey)
+				.header("X-HTTP-Method-Override", "PATCH").async();
 	}
 	
 	private AsyncInvoker getPostInvoker(ProvisionalClass provisionalClass) {
-		return target.path("provisional_classes").path(provisionalClass.getId()).request(MediaType.APPLICATION_JSON).header("Authorization", "apikey token=" + this.apiKey).async();
+		return target.path("provisional_classes").request(MediaType.APPLICATION_JSON).header("Authorization", "apikey token=" + this.apiKey).async();
 	}
 	
 	private AsyncInvoker getDeleteInvoker(String id) {
@@ -139,8 +140,27 @@ public class BioPortalClient {
 			}
 		});
 		filter.filter(list);
-		
+
 		System.out.println(list);
+		
+		/*ProvisionalClass submission = new ProvisionalClass();
+		submission.setLabel("test2");
+		submission.setCreator(userId);
+		Future<ProvisionalClass> postRes = bioPortalClient.postProvisionalClass(submission);
+		postRes.get();
+		*/
+		
+		//for(ProvisionalClass entry : list) {
+		//	Future<ProvisionalClass> res = bioPortalClient.deleteProvisionalClass(entry.getId());
+		//	res.get();
+		//}
+		
+		ProvisionalClass patch = new ProvisionalClass();
+		patch.setId("http://data.bioontology.org/provisional_classes/737af2a0-6751-0131-e6d9-005056010074");
+		patch.setCreator(userId);
+		patch.setLabel("test3");
+		Future<ProvisionalClass> patchRes = bioPortalClient.patchProvisionalClass(patch);
+		patchRes.get();
 		
 		//Future<ProvisionalClass> result2 = bioPortalClient.getProvisionalClass("4e3b6790-65eb-0131-7e69-005056010073");
 		//System.out.println(result2.get());

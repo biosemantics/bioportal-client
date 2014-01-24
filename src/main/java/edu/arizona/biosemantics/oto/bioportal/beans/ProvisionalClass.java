@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.codehaus.jackson.annotate.JsonAnySetter;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -117,6 +118,11 @@ public class ProvisionalClass {
 
 	public String getId() {
 		return id;
+	}
+	
+	@JsonIgnore
+	public String getShortId() {
+		return this.id.replace("http://data.bioontology.org/provisional_classes/", "");
 	}
 
 	@JsonProperty("@id")
