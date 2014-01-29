@@ -155,19 +155,24 @@ public class BioPortalClient {
 		//	res.get();
 		//}
 		
-		ProvisionalClass patch = new ProvisionalClass();
+		
+		Future<ProvisionalClass> result2 = bioPortalClient.getProvisionalClass("737af2a0-6751-0131-e6d9-005056010074");
+		ProvisionalClass resultClass = result2.get();
+		System.out.println(resultClass);
+		resultClass.setLabel("test3");
+		
+		/*ProvisionalClass patch = new ProvisionalClass();
 		patch.setId("http://data.bioontology.org/provisional_classes/737af2a0-6751-0131-e6d9-005056010074");
 		patch.setCreator(userId);
 		patch.setLabel("test3");
-		Future<ProvisionalClass> patchRes = bioPortalClient.patchProvisionalClass(patch);
+		*/
+		Future<ProvisionalClass> patchRes = bioPortalClient.patchProvisionalClass(resultClass);
 		patchRes.get();
-		
-		//Future<ProvisionalClass> result2 = bioPortalClient.getProvisionalClass("4e3b6790-65eb-0131-7e69-005056010073");
-		//System.out.println(result2.get());
-		
-		//Future<ProvisionalClass> result = bioPortalClient.deleteProvisionalClass("4e3b6790-65eb-0131-7e69-005056010073");
-		//System.out.println(result.get());
-		
+	
+		/*
+		Future<ProvisionalClass> result3 = bioPortalClient.deleteProvisionalClass("4e3b6790-65eb-0131-7e69-005056010073");
+		System.out.println(result3.get());
+		*/
 		bioPortalClient.close();
 	}
 
