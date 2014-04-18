@@ -1,358 +1,189 @@
 package edu.arizona.biosemantics.oto.bioportal.client;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Logger;
 
+import javax.ws.rs.client.AsyncInvoker;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.InvocationCallback;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.xml.bind.JAXBException;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.api.client.filter.LoggingFilter;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.filter.LoggingFilter;
+import org.glassfish.jersey.jackson.JacksonFeature;
 
-import edu.arizona.biosemantics.oto.bioportal.beans.Filter;
-import edu.arizona.biosemantics.oto.bioportal.beans.ProvisionalTerm;
-import edu.arizona.biosemantics.oto.bioportal.beans.response.Success;
+import edu.arizona.biosemantics.oto.bioportal.beans.ProvisionalClass;
 
-/**
- * BioPortalClient provides access to BioPortals REST Web Services 
- * e.g. at the moment the part of services available to provide provisional ontology terms
- * @author rodenhausen
- */
 public class BioPortalClient {
 
-	private String userId;
 	private String apiKey;
 	private String apiUrl;
 	private Client client;
-	private String superclassPrefix = "http://purl.obolibrary.org/obo/";
+	private WebTarget target;
 	
 	/**
 	 * @param apiUrl
 	 * @param apiKey
 	 */
-	public BioPortalClient(String apiUrl, String userId, String apiKey) {
+	public BioPortalClient(String apiUrl, String apiKey) {
 		this.apiUrl = apiUrl;
-		this.userId = userId;
 		this.apiKey = apiKey;
-		ClientConfig clientConfig = new DefaultClientConfig();
-		client = Client.create(clientConfig);
-		//client.addFilter(new LoggingFilter(System.out));
 	}
 	
+	public void open() {		
+		client = ClientBuilder.newBuilder().withConfig(new ClientConfig()).register(JacksonFeature.class).build();
+		client.register(new LoggingFilter(Logger.getAnonymousLogger(), true));
+		
+		//this doesn't seem to work for posts (among others), even though it is documented as such, use authentication header instead there
+		//target = client.target(this.apiUrl).queryParam("apikey", this.apiKey);
+		target = client.target(this.apiUrl);
+	}
+	
+	public void close() {
+		client.close();
+	}
+		
+	public Future<List<ProvisionalClass>> getProvisionalClasses() {
+		return this.getGetInvoker().get(new GenericType<List<ProvisionalClass>>() {});
+	}
+	
+	public void getProvisionalClasses(InvocationCallback<List<ProvisionalClass>> callback) {
+		this.getGetInvoker().get(callback);
+	}
+	
+	public Future<ProvisionalClass> getProvisionalClass(String id) {
+		return this.getGetInvoker(id).get(ProvisionalClass.class);
+	}
+	
+	public void getProvisionalClass(String id, InvocationCallback<ProvisionalClass> callback) {
+		this.getGetInvoker(id).get(callback);
+	}
+	
+	public Future<ProvisionalClass> postProvisionalClass(ProvisionalClass provisionalClass) {
+		return this.getPostInvoker(provisionalClass).post(Entity.entity(provisionalClass, MediaType.APPLICATION_JSON), ProvisionalClass.class);
+	}
+	
+	public void postProvisionalClass(ProvisionalClass provisionalClass, InvocationCallback<ProvisionalClass> callback) {
+		this.getPostInvoker(provisionalClass).post(Entity.entity(provisionalClass, MediaType.APPLICATION_JSON), callback);
+	}
+	
+	public Future<ProvisionalClass> deleteProvisionalClass(String id) {
+	    return this.getDeleteInvoker(id).delete(ProvisionalClass.class);
+	}
+
+	public void deleteProvisionalClass(String id, InvocationCallback<ProvisionalClass> callback) {
+		this.getDeleteInvoker(id).delete(callback);
+	}
+	
+	public Future<ProvisionalClass> patchProvisionalClass(ProvisionalClass provisionalClass) {
+	    return this.getPatchInvoker(provisionalClass).method("POST", Entity.entity(provisionalClass, MediaType.APPLICATION_JSON), ProvisionalClass.class);
+	}
+	
+	public void patchProvisionalClass(ProvisionalClass provisionalClass, InvocationCallback<ProvisionalClass> callback) {
+		this.getPatchInvoker(provisionalClass).method("POST", Entity.entity(provisionalClass, MediaType.APPLICATION_JSON), callback);
+	}
+	
+	private AsyncInvoker getGetInvoker() {
+		return target.path("provisional_classes").request(MediaType.APPLICATION_JSON).header("Authorization", "apikey token=" + this.apiKey).async();
+	}
+	
+	private AsyncInvoker getGetInvoker(String id) {
+		//id = URLEncoder.encode(id,"UTF-8"); 
+		return target.path("provisional_classes").path(id).request(MediaType.APPLICATION_JSON).header("Authorization", "apikey token=" + this.apiKey).async();
+	}
+	
+	private AsyncInvoker getPatchInvoker(ProvisionalClass provisionalClass) {
+		return target.path("provisional_classes").path(provisionalClass.getShortId()).request(MediaType.APPLICATION_JSON).header("Authorization", "apikey token=" + this.apiKey)
+				.header("X-HTTP-Method-Override", "PATCH").async();
+	}
+	
+	private AsyncInvoker getPostInvoker(ProvisionalClass provisionalClass) {
+		return target.path("provisional_classes").request(MediaType.APPLICATION_JSON).header("Authorization", "apikey token=" + this.apiKey).async();
+	}
+	
+	private AsyncInvoker getDeleteInvoker(String id) {
+		//id = URLEncoder.encode(id,"UTF-8"); 
+		return  target.path("provisional_classes").path(id).request(MediaType.APPLICATION_JSON).header("Authorization", "apikey token=" + this.apiKey).async();	
+	}
+
 	/**
-	 * Get a single provisional term for the given provisional term id.
-	 * @param termid
-	 * @return Success
-	 * @throws JAXBException when returned XML cannot be parsed into schema, 
-	 * e.g. because no success but error response was returned by web service
+	 * @param args
+	 * @throws IOException 
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	public Success getProvisionalTerm(String termId) throws JAXBException {
-		String url = this.apiUrl + "provisional";
-	    WebResource webResource = client.resource(url);
-	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-	    queryParams.add("termid", termId);
-	    queryParams.add("apikey", this.apiKey);
-	    return webResource.queryParams(queryParams).get(Success.class);
-	}
-	
-	public String getProvisionalTermReturnString(String termId) throws JAXBException {
-		String url = this.apiUrl + "provisional";
-	    WebResource webResource = client.resource(url);
-	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-	    queryParams.add("termid", termId);
-	    queryParams.add("apikey", this.apiKey);
-	    return webResource.queryParams(queryParams).get(String.class);
-	}
-	
-	/**
-	 * Get all available provisional terms using a paged interface.
-	 * @throws JAXBException when returned XML cannot be parsed into schema, 
-	 * e.g. because no success but error response was returned by web service
-	 */
-	public Success getProvisionalTerms() throws JAXBException {
-		String url = this.apiUrl + "provisional";
-	    WebResource webResource = client.resource(url);
-	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-	    queryParams.add("apikey", this.apiKey);	    
-	    return webResource.queryParams(queryParams).get(Success.class);
-	}
-	
-	public String getProvisionalTermsReturnString() throws JAXBException {
-		String url = this.apiUrl + "provisional";
-	    WebResource webResource = client.resource(url);
-	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-	    queryParams.add("apikey", this.apiKey);	    
-	    return webResource.queryParams(queryParams).get(String.class);
-	}
-	
-	/**
-	 * Get all available provisional terms using a paged interface.
-	 * @param filter
-	 * @return Success
-	 * @throws JAXBException when returned XML cannot be parsed into schema, 
-	 * e.g. because no success but error response was returned by web service
-	 */
-	public Success getProvisionalTerms(Filter filter) throws JAXBException {
-		String url = this.apiUrl + "provisional";
-	    WebResource webResource = client.resource(url);
-	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-	    queryParams.add("apikey", this.apiKey);
-	    
-	    if(filter.hasCreatedEndDate())
-	    	queryParams.add("createdenddate", filter.getCreatedEndDate());
-	    if(filter.hasImplementedTermsOnly())
-	    	queryParams.add("implementedtermsonly", filter.getImplementedTermsOnly());
-	    if(filter.hasOntologyIds())
-	    	queryParams.add("ontologyids", filter.getOntologyIds());
-	    if(filter.hasPageNum())
-	    	queryParams.add("pagenum", filter.getPageNum());
-	    if(filter.hasPageSize())
-	    	queryParams.add("pagesize", filter.getPageSize());
-	    if(filter.hasSubmittedBy())
-	    	queryParams.add("submittedby", filter.getSubmittedBy());
-	    if(filter.hasUpdatedEndDate())
-	    	queryParams.add("updatedenddate", filter.getUpdatedEndDate());
-	    if(filter.hasUpdatedStartDate())
-	    	queryParams.add("updatedstartdate", filter.getUpdatedStartDate());
-	    
-	    return webResource.queryParams(queryParams).get(Success.class);
-	}
-	
-	public String getProvisionalTermsReturnString(Filter filter) throws JAXBException {
-		String url = this.apiUrl + "provisional";
-	    WebResource webResource = client.resource(url);
-	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-	    queryParams.add("apikey", this.apiKey);
-	    
-	    if(filter.hasCreatedEndDate())
-	    	queryParams.add("createdenddate", filter.getCreatedEndDate());
-	    if(filter.hasImplementedTermsOnly())
-	    	queryParams.add("implementedtermsonly", filter.getImplementedTermsOnly());
-	    if(filter.hasOntologyIds())
-	    	queryParams.add("ontologyids", filter.getOntologyIds());
-	    if(filter.hasPageNum())
-	    	queryParams.add("pagenum", filter.getPageNum());
-	    if(filter.hasPageSize())
-	    	queryParams.add("pagesize", filter.getPageSize());
-	    if(filter.hasSubmittedBy())
-	    	queryParams.add("submittedby", filter.getSubmittedBy());
-	    if(filter.hasUpdatedEndDate())
-	    	queryParams.add("updatedenddate", filter.getUpdatedEndDate());
-	    if(filter.hasUpdatedStartDate())
-	    	queryParams.add("updatedstartdate", filter.getUpdatedStartDate());
-	    
-	    return webResource.queryParams(queryParams).get(String.class);
-	}
-	
-	/**
-	 * Create a provisional term.
-	 * @return Success
-	 * @param provisionalTerm
-	 * @throws JAXBException when returned XML cannot be parsed into schema, 
-	 * e.g. because no success but error response was returned by web service
-	 */
-	public Success createProvisionalTerm(ProvisionalTerm provisionalTerm) throws JAXBException, IllegalArgumentException {
-		String url = this.apiUrl + "provisional";
-	    WebResource webResource = client.resource(url);
-	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-	    queryParams.add("apikey", this.apiKey);
-	    
-	    MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-	    formData.add("submittedby", this.userId);
-	    if(provisionalTerm.hasTerm() && provisionalTerm.hasDefinition()) {
-	    	formData.add("preferredname", provisionalTerm.getTerm());
-	    	formData.add("definition", provisionalTerm.getDefinition());
-	    } else {
-	    	throw new IllegalArgumentException();
-	    }
-	    if(provisionalTerm.hasOntologyIds())
-	    	formData.add("ontologyids", provisionalTerm.getOntologyids());
-	    if(provisionalTerm.hasSynonyms())
-	    	formData.add("synonyms", provisionalTerm.getSynonyms());
-	    if(provisionalTerm.hasSuperClass())
-	    	formData.add("superclass", superclassPrefix + provisionalTerm.getSuperclass());
-	    
-	    return webResource.queryParams(queryParams).type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(Success.class, formData);
-	}
-	
-	public String createProvisionalTermReturnString(ProvisionalTerm provisionalTerm) throws JAXBException, IllegalArgumentException {
-		String url = this.apiUrl + "provisional";
-	    WebResource webResource = client.resource(url);
-	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-	    queryParams.add("apikey", this.apiKey);
-	    
-	    MultivaluedMap<String, String> formData = new MultivaluedMapImpl();
-	    formData.add("submittedby", this.userId);
-	    if(provisionalTerm.hasTerm() && provisionalTerm.hasDefinition()) {
-	    	formData.add("preferredname", provisionalTerm.getTerm());
-	    	formData.add("definition", provisionalTerm.getDefinition());
-	    } else {
-	    	throw new IllegalArgumentException();
-	    }
-	    if(provisionalTerm.hasOntologyIds())
-	    	formData.add("ontologyids", provisionalTerm.getOntologyids());
-	    if(provisionalTerm.hasSynonyms())
-	    	formData.add("synonyms", provisionalTerm.getSynonyms());
-	    if(provisionalTerm.hasSuperClass())
-	    	formData.add("superclass", superclassPrefix + provisionalTerm.getSuperclass());
-	    
-	    return webResource.queryParams(queryParams).type(MediaType.APPLICATION_FORM_URLENCODED_TYPE).post(String.class, formData);
-	}
-	
-	/**
-	 * Update fields for a provisional term.
-	 * @param termId
-	 * @return Success
-	 * @param provisionalTerm
-	 * @throws JAXBException when returned XML cannot be parsed into schema, 
-	 * e.g. because no success but error response was returned by web service
-	 */
-	public Success updateProvisionalTerm(String termId, ProvisionalTerm provisionalTerm) throws JAXBException {	    
-		String url = this.apiUrl + "provisional";
-	    WebResource webResource = client.resource(url);
-	    
-	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-	    queryParams.add("apikey", this.apiKey);
-	    queryParams.add("termid", termId);
-	    queryParams.add("submittedby", this.userId);
-	    if(provisionalTerm.hasTerm())
-	    	queryParams.add("preferredname", provisionalTerm.getTerm());
-	    if(provisionalTerm.hasDefinition()) 
-	    	queryParams.add("definition", provisionalTerm.getDefinition());
-	    if(provisionalTerm.hasOntologyIds())
-	    	queryParams.add("ontologyids", provisionalTerm.getOntologyids());
-	    if(provisionalTerm.hasPermanentId())
-	    	queryParams.add("permanentid", provisionalTerm.getPermanentid());
-	    if(provisionalTerm.hasSuperClass())
-	    	queryParams.add("superclass", superclassPrefix + provisionalTerm.getSuperclass());
-	    if(provisionalTerm.hasSynonyms())
-	    	queryParams.add("synonyms", provisionalTerm.getSynonyms());
-	    
-	    return webResource.queryParams(queryParams).put(Success.class);
-	}
-	
-	public String updateProvisionalTermReturnString(String termId, ProvisionalTerm provisionalTerm) throws JAXBException {	    
-		String url = this.apiUrl + "provisional";
-	    WebResource webResource = client.resource(url);
-	    
-	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-	    queryParams.add("apikey", this.apiKey);
-	    queryParams.add("termid", termId);
-	    queryParams.add("submittedby", this.userId);
-	    if(provisionalTerm.hasTerm())
-	    	queryParams.add("preferredname", provisionalTerm.getTerm());
-	    if(provisionalTerm.hasDefinition()) 
-	    	queryParams.add("definition", provisionalTerm.getDefinition());
-	    if(provisionalTerm.hasOntologyIds())
-	    	queryParams.add("ontologyids", provisionalTerm.getOntologyids());
-	    if(provisionalTerm.hasPermanentId())
-	    	queryParams.add("permanentid", provisionalTerm.getPermanentid());
-	    if(provisionalTerm.hasSuperClass())
-	    	queryParams.add("superclass", superclassPrefix + provisionalTerm.getSuperclass());
-	    if(provisionalTerm.hasSynonyms())
-	    	queryParams.add("synonyms", provisionalTerm.getSynonyms());
-	    
-	    return webResource.queryParams(queryParams).put(String.class);
-	}
-	
-	/**
-	 * Delete a provisional term.
-	 * @return Success
-	 * @param termId
-	 * @throws JAXBException when returned XML cannot be parsed into schema, 
-	 * e.g. because no success but error response was returned by web service
-	 */
-	public Success deleteProvisionalTerm(String termId) throws JAXBException {
-		String url = this.apiUrl + "provisional";
-	    WebResource webResource = client.resource(url);
-	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-	    queryParams.add("termid", termId);
-	    queryParams.add("apikey", this.apiKey);
-	    return webResource.queryParams(queryParams).delete(Success.class);
-	}
-	
-	public String deleteProvisionalTermReturnString(String termId) throws JAXBException {
-		String url = this.apiUrl + "provisional";
-	    WebResource webResource = client.resource(url);
-	    MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-	    queryParams.add("termid", termId);
-	    queryParams.add("apikey", this.apiKey);
-	    return webResource.queryParams(queryParams).delete(String.class);
-	}
-	
-	public static void main(String[] args) throws JAXBException, IOException {
+	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 		Properties properties = new Properties(); 
 		properties.load(loader.getResourceAsStream("config.properties"));
 		String url = properties.getProperty("bioportalUrl");
-		String userId = properties.getProperty("bioportalUserId");
+		final String userId = properties.getProperty("bioportalUserId");
 		String apiKey = properties.getProperty("bioportalApiKey");
-		BioPortalClient bioPortalClient = new BioPortalClient(url, userId, apiKey);	
+		BioPortalClient bioPortalClient = new BioPortalClient(url, apiKey);
+		bioPortalClient.open();
+			
+		Future<List<ProvisionalClass>> result = bioPortalClient.getProvisionalClasses();
+		List<ProvisionalClass> list = result.get();
 		
-		ProvisionalTerm provisionalTerm = new ProvisionalTerm();
-		provisionalTerm.setTerm("test name");
-		provisionalTerm.setDefinition("this is a test definition");
-		String response = bioPortalClient.createProvisionalTermReturnString(provisionalTerm);
-		
-		System.out.println("here: " + response);
-		
-		/*String[] ids = new String[] { 
-				"http://purl.bioontology.org/ontology/provisional/5325b90e-0334-48a1-98a5-3f414c146276"
-			}; 
-				
-		for(String id : ids) {
-			bioPortalClient.deleteProvisionalTerm(id);
-		} */
+		ProvisionalClassFilter filter = new ProvisionalClassFilter(new FilterCriteria<ProvisionalClass>() {
+			@Override
+			public boolean filter(ProvisionalClass t) {
+				return !t.getCreator().equals(userId);
+			}
+		});
+		filter.filter(list);
+
+		System.out.println(list);
 		
 		
-		//for(int i=0; i<56; i++) {
-		/*	Filter filter = new Filter();
-			filter.setSubmittedBy(userId);
-			//filter.setPageSize("279");
-			//filter.setPageNum(String.valueOf(i));
-			//filter.setImplementedTermsOnly("true");
-			Success success = bioPortalClient.getProvisionalTerms(filter);
-		*/	
-			//System.out.println("-----------------done-------------------");
-			//System.out.println(success.getData().getList());
-			//System.out.println(success.getData().getClassBean());
+		//Future<ProvisionalClass> result0 = bioPortalClient.getProvisionalClass("37179c50-65ec-0131-7e69-005056010073");
+		//result0.get();
+		
+		
+		/*ProvisionalClass submission = new ProvisionalClass();
+		submission.setLabel("test2");
+		submission.setCreator(userId);
+		Future<ProvisionalClass> postRes = bioPortalClient.postProvisionalClass(submission);
+		postRes.get();
+		*/
+		
+		//for(ProvisionalClass entry : list) {
+		//	Future<ProvisionalClass> res = bioPortalClient.deleteProvisionalClass(entry.getId());
+		//	res.get();
 		//}
 		
-		/*System.out.println("Provide a new term: ");
-		ProvisionalTerm provisionalTerm = new ProvisionalTerm();
-		provisionalTerm.setPreferredname("test name");
-		provisionalTerm.setDefinition("this is a test definition");
-		Success createSuccess = bioPortalClient.createProvisionalTerm(provisionalTerm);
 		
-		System.out.println("All the terms provided by this userId: ");
-		Filter filter = new Filter();
-		filter.setSubmittedBy(userId);
-		Success getSuccess = bioPortalClient.getProvisionalTerms(filter);
+		/*Future<ProvisionalClass> result2 = bioPortalClient.getProvisionalClass("737af2a0-6751-0131-e6d9-005056010074");
+		ProvisionalClass resultClass = result2.get();
+		System.out.println(resultClass);
+		resultClass.setLabel("test3");
+		*/
 		
-		List<Object> fullIdOrIdOrLabel = createSuccess.getData().getClassBean().getFullIdOrIdOrLabel();
-		for(Object object : fullIdOrIdOrLabel) {
-			if(object instanceof JAXBElement) {
-				JAXBElement<String> possibleIdElement = (JAXBElement<String>)object;
-				if(possibleIdElement.getName().toString().equals("id")) {
-					ProvisionalTerm updatedProvisionalTerm = new ProvisionalTerm();
-					updatedProvisionalTerm.setPreferredname("test name 2");
-					System.out.println("update the provided term with a new preferredname");
-					bioPortalClient.updateProvisionalTerm(possibleIdElement.getValue(), updatedProvisionalTerm);
-					System.out.println("view the updated term:");
-					Success getSuccess2 = bioPortalClient.getProvisionalTerm(possibleIdElement.getValue());
-					
-					System.out.println("delete provided term");
-					bioPortalClient.deleteProvisionalTerm(possibleIdElement.getValue());
-				}
-			}
-		}
+		/*ProvisionalClass patch = new ProvisionalClass();
+		patch.setId("http://data.bioontology.org/provisional_classes/737af2a0-6751-0131-e6d9-005056010074");
+		patch.setCreator(userId);
+		patch.setLabel("test3");
+		*/
+		//Future<ProvisionalClass> patchRes = bioPortalClient.patchProvisionalClass(resultClass);
+		//patchRes.get();
+	
 		
-		System.out.println("All the terms provided by this userId. The provided term should have disappeared.");
-		Success getSuccess3 = bioPortalClient.getProvisionalTerms(filter); */
+		//Future<ProvisionalClass> result3 = bioPortalClient.deleteProvisionalClass("f7e6d4e0-8130-0131-9589-005056010073");
+		//System.out.println(result3.get());
+		
+		ProvisionalClass test3 = list.get(0);
+		test3.setLabel("test334");
+		System.out.println(bioPortalClient.patchProvisionalClass(test3).get());
+		
+		bioPortalClient.close();
 	}
+
 }
