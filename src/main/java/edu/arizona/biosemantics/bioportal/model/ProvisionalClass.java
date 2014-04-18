@@ -1,4 +1,4 @@
-package edu.arizona.biosemantics.oto.bioportal.beans;
+package edu.arizona.biosemantics.bioportal.model;
 
 import java.io.IOException;
 import java.util.List;

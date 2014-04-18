@@ -1,4 +1,4 @@
-package edu.arizona.biosemantics.oto.bioportal.client;
+package edu.arizona.biosemantics.bioportal.client;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,7 +20,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
 
-import edu.arizona.biosemantics.oto.bioportal.beans.ProvisionalClass;
+import edu.arizona.biosemantics.bioportal.model.ProvisionalClass;
 
 public class BioPortalClient {
 

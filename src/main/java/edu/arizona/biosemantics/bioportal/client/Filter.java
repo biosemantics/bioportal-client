@@ -1,4 +1,4 @@
-package edu.arizona.biosemantics.oto.bioportal.client;
+package edu.arizona.biosemantics.bioportal.client;
 
 import java.util.Collection;
 

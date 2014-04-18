@@ -1,10 +1,10 @@
-package edu.arizona.biosemantics.oto.bioportal.client;
+package edu.arizona.biosemantics.bioportal.client;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import edu.arizona.biosemantics.oto.bioportal.beans.ProvisionalClass;
+import edu.arizona.biosemantics.bioportal.model.ProvisionalClass;
 
 public class ProvisionalClassFilter implements Filter<ProvisionalClass> {
 
