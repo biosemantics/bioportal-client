@@ -53,16 +53,26 @@ public class SearchResultPage {
 		
 	private static ObjectMapper objectMapper = new ObjectMapper();
 	private String nextPage;
+	private int pageCount;
 	private List<SearchResult> searchResults;
 	
 	public SearchResultPage() { }
 	
-	public SearchResultPage(String nextPage, List<SearchResult> searchResults) {
+	public SearchResultPage(String nextPage, int pageCount, List<SearchResult> searchResults) {
 		super();
 		this.nextPage = nextPage;
+		this.pageCount = pageCount;
 		this.searchResults = searchResults;
 	}
-	
+		
+	public int getPageCount() {
+		return pageCount;
+	}
+
+	public void setPageCount(int pageCount) {
+		this.pageCount = pageCount;
+	}
+
 	public String getNextPage() {
 		return nextPage;
 	}
