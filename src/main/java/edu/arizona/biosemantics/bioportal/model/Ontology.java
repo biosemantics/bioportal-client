@@ -1,6 +1,7 @@
 package edu.arizona.biosemantics.bioportal.model;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import org.codehaus.jackson.annotate.JsonAnySetter;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -15,7 +16,7 @@ public class Ontology {
 	
 	public Ontology() { }
 	
-	public Ontology(String acronym, String name, String id) {
+	public Ontology(String id, String acronym, String name) {
 		super();
 		this.acronym = acronym;
 		this.name = name;

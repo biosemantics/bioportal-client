@@ -14,18 +14,47 @@ public class SearchResultPage {
 	
 	public static class SearchResult {
 		
-		private String prefLabel;
+		private String id;
+		private String label;
+		private String definition;
+		private String url;
 		
 		public SearchResult() { }
-
-		public String getPrefLabel() {
-			return prefLabel;
+		
+		public String getId() {
+			return id;
 		}
 
-		public void setPrefLabel(String prefLabel) {
-			this.prefLabel = prefLabel;
-		}		
+		@JsonProperty("@id")
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public String getLabel() {
+			return label;
+		}
+
+		@JsonProperty("prefLabel")
+		public void setLabel(String label) {
+			this.label = label;
+		}
 		
+		public String getDefinition() {
+			return definition;
+		}
+
+		public void setDefinition(String definition) {
+			this.definition = definition;
+		}
+
+		public String getUrl() {
+			return url;
+		}
+
+		public void setUrl(String url) {
+			this.url = url;
+		}
+
 		@JsonAnySetter
 		public void handleUnknown(String key, Object value) {}
 	}
