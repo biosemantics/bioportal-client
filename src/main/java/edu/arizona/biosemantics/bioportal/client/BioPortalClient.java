@@ -1,6 +1,7 @@
 package edu.arizona.biosemantics.bioportal.client;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
@@ -20,7 +21,10 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
 
+import edu.arizona.biosemantics.bioportal.model.Ontology;
 import edu.arizona.biosemantics.bioportal.model.ProvisionalClass;
+import edu.arizona.biosemantics.bioportal.model.Search;
+import edu.arizona.biosemantics.bioportal.model.SearchResultPage;
 
 public class BioPortalClient {
 
@@ -50,6 +54,56 @@ public class BioPortalClient {
 	public void close() {
 		client.close();
 	}
+	
+	
+	
+	public Future<List<Ontology>> getOntologies() {
+		return this.getOntologiesInvoker().get(new GenericType<List<Ontology>>() {});
+	}
+	
+	public void getOntologies(InvocationCallback<List<Ontology>> callback) {
+		this.getOntologiesInvoker().get(callback);
+	}
+	
+	public Future<SearchResultPage> searchClasses(Search search) {
+		return this.getSearchInvoker(search).get(SearchResultPage.class);
+	}
+	
+	public void searchClasses(Search search, InvocationCallback<SearchResultPage> callback) {
+		this.getSearchInvoker(search).get(callback);
+	}
+	
+	public Future<SearchResultPage> getSearchResultPage(String url) {
+		WebTarget target = client.target(url);
+		return getSearchResultPageInvoker(target).get(SearchResultPage.class);
+	}
+	
+	public void getSearchResultPage(String url, InvocationCallback<SearchResultPage> callback) {
+		WebTarget target = client.target(url);
+		getSearchResultPageInvoker(target).get(callback);
+	}
+	
+	private AsyncInvoker getSearchResultPageInvoker(WebTarget target) {
+		return target.request(MediaType.APPLICATION_JSON).header("Authorization", "apikey token=" + this.apiKey).async();
+	}
+
+	private AsyncInvoker getSearchInvoker(Search search) {
+		WebTarget result = target.path("search").queryParam("q", search.getQuery());
+		if(search.hasOntologies())
+			result = result.queryParam("ontologies", search.getOntologiesString());
+		return result.queryParam("exact_match", search.isExactMatch())
+				.queryParam("include_views", search.isIncludeViews())
+				.queryParam("required_definition", search.isRequiresDefinition())
+				.queryParam("include_properties", search.isIncludeProperties())
+				.queryParam("include_obsolete", search.isIncludeObsolete())				
+				.request(MediaType.APPLICATION_JSON).header("Authorization", "apikey token=" + this.apiKey).async();
+	}
+
+	private AsyncInvoker getOntologiesInvoker() {
+		return target.path("ontologies").request(MediaType.APPLICATION_JSON).header("Authorization", "apikey token=" + this.apiKey).async();
+	}
+	
+	
 		
 	public Future<List<ProvisionalClass>> getProvisionalClasses() {
 		return this.getGetInvoker().get(new GenericType<List<ProvisionalClass>>() {});
@@ -125,10 +179,28 @@ public class BioPortalClient {
 		Properties properties = new Properties(); 
 		properties.load(loader.getResourceAsStream("config.properties"));
 		String url = properties.getProperty("bioportalUrl");
-		final String userId = properties.getProperty("bioportalUserId");
 		String apiKey = properties.getProperty("bioportalApiKey");
 		BioPortalClient bioPortalClient = new BioPortalClient(url, apiKey);
 		bioPortalClient.open();
+		
+		Search search = new Search();
+		List<Ontology> ontologies = new LinkedList<Ontology>();
+		Ontology ontology = new Ontology();
+		ontology.setId("http://data.bioontology.org/ontologies/PATO");
+		ontologies.add(ontology);
+		search.setOntologies(ontologies);
+		search.setQuery("leaf");
+		SearchResultPage result = bioPortalClient.searchClasses(search).get();
+
+		System.out.println(result.toString());
+		while(result.getNextPage() != null) {
+			String nextPage = result.getNextPage();
+			result = bioPortalClient.getSearchResultPage(nextPage).get();
+			System.out.println(result.toString());
+		}
+		bioPortalClient.close();		
+		
+		/*
 			
 		Future<List<ProvisionalClass>> result = bioPortalClient.getProvisionalClasses();
 		List<ProvisionalClass> list = result.get();
@@ -142,7 +214,7 @@ public class BioPortalClient {
 		filter.filter(list);
 
 		System.out.println(list);
-		
+		*/
 		
 		//Future<ProvisionalClass> result0 = bioPortalClient.getProvisionalClass("37179c50-65ec-0131-7e69-005056010073");
 		//result0.get();
@@ -179,10 +251,10 @@ public class BioPortalClient {
 		//Future<ProvisionalClass> result3 = bioPortalClient.deleteProvisionalClass("f7e6d4e0-8130-0131-9589-005056010073");
 		//System.out.println(result3.get());
 		
-		ProvisionalClass test3 = list.get(0);
+		/*ProvisionalClass test3 = list.get(0);
 		test3.setLabel("test334");
 		System.out.println(bioPortalClient.patchProvisionalClass(test3).get());
-		
+		*/
 		bioPortalClient.close();
 	}
 
