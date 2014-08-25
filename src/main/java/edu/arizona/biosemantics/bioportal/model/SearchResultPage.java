@@ -16,7 +16,7 @@ public class SearchResultPage {
 		
 		private String id;
 		private String label;
-		private String definition;
+		private List<String> definitions;
 		private String url;
 		
 		public SearchResult() { }
@@ -39,12 +39,12 @@ public class SearchResultPage {
 			this.label = label;
 		}
 		
-		public String getDefinition() {
-			return definition;
+		public List<String> getDefinitions() {
+			return definitions;
 		}
 
-		public void setDefinition(String definition) {
-			this.definition = definition;
+		public void setDefinitions(List<String> definitions) {
+			this.definitions = definitions;
 		}
 
 		public String getUrl() {
@@ -88,7 +88,9 @@ public class SearchResultPage {
 	public void handleUnknown(String key, Object value) { 		
 		if(key.equals("links") && value instanceof Map) {
 			Map valueMap = (Map)value;
-			this.nextPage = (String)valueMap.get("nextPage");
+			Object object = valueMap.get("nextPage");
+			if(object != null && object instanceof String)
+				this.nextPage = (String)object;
 		}
 	}
 	
