@@ -1,6 +1,9 @@
 package edu.arizona.biosemantics.bioportal.client;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -186,17 +189,22 @@ public class BioPortalClient {
 		Search search = new Search();
 		List<Ontology> ontologies = new LinkedList<Ontology>();
 		Ontology ontology = new Ontology();
-		ontology.setId("http://data.bioontology.org/ontologies/PATO");
-		ontologies.add(ontology);
-		search.setOntologies(ontologies);
-		search.setQuery("leaf");
+		//ontology.setId("http://data.bioontology.org/ontologies/PATO");
+		//ontologies.add(ontology);
+		//search.setOntologies(ontologies);
+		search.setQuery("stem");
+		search.setExactMatch(true);
+		search.setRequiresDefinition(true);
+		search.setIncludeObsolete(false);
 		SearchResultPage result = bioPortalClient.searchClasses(search).get();
-
+		Files.write( Paths.get("out.txt"), (result.toString()+"\n").getBytes(), StandardOpenOption.APPEND);
+		
 		System.out.println(result.toString());
 		while(result.getNextPage() != null) {
 			String nextPage = result.getNextPage();
 			result = bioPortalClient.getSearchResultPage(nextPage).get();
 			System.out.println(result.toString());
+			Files.write( Paths.get("out.txt"), (result.toString()+"\n").getBytes(), StandardOpenOption.APPEND);
 		}
 		bioPortalClient.close();		
 		

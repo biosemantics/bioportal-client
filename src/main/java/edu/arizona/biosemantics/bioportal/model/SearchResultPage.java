@@ -17,7 +17,6 @@ public class SearchResultPage {
 		private String id;
 		private String label;
 		private List<String> definitions;
-		private String url;
 		
 		public SearchResult() { }
 		
@@ -43,16 +42,9 @@ public class SearchResultPage {
 			return definitions;
 		}
 
+		@JsonProperty("definition")
 		public void setDefinitions(List<String> definitions) {
 			this.definitions = definitions;
-		}
-
-		public String getUrl() {
-			return url;
-		}
-
-		public void setUrl(String url) {
-			this.url = url;
 		}
 
 		@JsonAnySetter
