@@ -20,6 +20,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -69,6 +70,9 @@ public class BioPortalClient {
 	}
 	
 	public Future<SearchResultPage> searchClasses(Search search) {
+		if(search.isSearchForOntologies() && !search.hasOntologies()) {
+			return ConcurrentUtils.constantFuture(new SearchResultPage(null, 0, new LinkedList<SearchResultPage.SearchResult>()));
+		}
 		return this.getSearchInvoker(search).get(SearchResultPage.class);
 	}
 	

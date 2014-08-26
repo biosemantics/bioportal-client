@@ -16,6 +16,10 @@ public class Search {
 		return ontologies != null && !ontologies.isEmpty();
 	}
 	
+	public boolean isSearchForOntologies() {
+		return ontologies != null;
+	}
+	
 	public String getQuery() {
 		return query;
 	}
