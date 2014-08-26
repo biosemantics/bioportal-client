@@ -17,6 +17,7 @@ public class SearchResultPage {
 		private String id;
 		private String label;
 		private List<String> definitions;
+		private String ontology;
 		
 		public SearchResult() { }
 		
@@ -47,8 +48,20 @@ public class SearchResultPage {
 			this.definitions = definitions;
 		}
 
+
+		public String getOntology() {
+			return ontology;
+		}
+
 		@JsonAnySetter
-		public void handleUnknown(String key, Object value) {}
+		public void handleUnknown(String key, Object value) {
+			if(key.equals("links") && value instanceof Map) {
+				Map valueMap = (Map)value;
+				Object object = valueMap.get("ontology");
+				if(object != null && object instanceof String)
+					this.ontology = (String)object;
+			}
+		}
 	}
 		
 	private static ObjectMapper objectMapper = new ObjectMapper();
