@@ -1,6 +1,5 @@
 package edu.arizona.biosemantics.bioportal.model;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,8 +62,7 @@ public class SearchResultPage {
 			}
 		}
 	}
-		
-	private static ObjectMapper objectMapper = new ObjectMapper();
+	
 	private String nextPage;
 	private int pageCount;
 	private List<SearchResult> searchResults;
@@ -107,15 +105,5 @@ public class SearchResultPage {
 			if(object != null && object instanceof String)
 				this.nextPage = (String)object;
 		}
-	}
-	
-	@Override
-	public String toString() {
-		try {
-			return objectMapper.writeValueAsString(this);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return "";
 	}
 }

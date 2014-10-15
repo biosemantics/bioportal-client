@@ -1,6 +1,5 @@
 package edu.arizona.biosemantics.bioportal.model;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.codehaus.jackson.annotate.JsonAnySetter;
@@ -10,7 +9,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 public class ProvisionalClass {
 
-	private static ObjectMapper objectMapper = new ObjectMapper();
 	private String label;
 	private List<String> synonym;
 	private List<String> definition;
@@ -141,14 +139,5 @@ public class ProvisionalClass {
 	
 	@JsonAnySetter
 	public void handleUnknown(String key, Object value) { }
-		
-	@Override
-	public String toString() {
-		try {
-			return objectMapper.writeValueAsString(this);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return "";
-	}
+	
 }

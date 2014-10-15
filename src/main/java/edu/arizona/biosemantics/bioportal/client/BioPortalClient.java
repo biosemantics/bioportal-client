@@ -25,12 +25,13 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
 
+import edu.arizona.biosemantics.bioportal.client.log.LogLevel;
 import edu.arizona.biosemantics.bioportal.model.Ontology;
 import edu.arizona.biosemantics.bioportal.model.ProvisionalClass;
 import edu.arizona.biosemantics.bioportal.model.Search;
 import edu.arizona.biosemantics.bioportal.model.SearchResultPage;
 
-public class BioPortalClient {
+public class BioPortalClient implements AutoCloseable {
 
 	private String apiKey;
 	private String apiUrl;
@@ -46,7 +47,8 @@ public class BioPortalClient {
 		this.apiKey = apiKey;
 	}
 	
-	public void open() {		
+	public void open() {
+		log(LogLevel.INFO, "Open connection to bioportal");
 		client = ClientBuilder.newBuilder().withConfig(new ClientConfig()).register(JacksonFeature.class).build();
 		client.register(new LoggingFilter(Logger.getAnonymousLogger(), true));
 		
@@ -56,6 +58,7 @@ public class BioPortalClient {
 	}
 	
 	public void close() {
+		log(LogLevel.INFO, "Close connection to bioportal");
 		client.close();
 	}
 	
@@ -110,8 +113,6 @@ public class BioPortalClient {
 		return target.path("ontologies").request(MediaType.APPLICATION_JSON).header("Authorization", "apikey token=" + this.apiKey).async();
 	}
 	
-	
-		
 	public Future<List<ProvisionalClass>> getProvisionalClasses() {
 		return this.getGetInvoker().get(new GenericType<List<ProvisionalClass>>() {});
 	}

@@ -1,6 +1,5 @@
 package edu.arizona.biosemantics.bioportal.model;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 import org.codehaus.jackson.annotate.JsonAnySetter;
@@ -9,7 +8,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 public class Ontology {
 
-	private static ObjectMapper objectMapper = new ObjectMapper();
 	private String acronym;
 	private String name;
 	private String id;
@@ -45,13 +43,5 @@ public class Ontology {
 	@JsonAnySetter
 	public void handleUnknown(String key, Object value) {}
 	
-	@Override
-	public String toString() {
-		try {
-			return objectMapper.writeValueAsString(this);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return "";
-	}
+
 }
