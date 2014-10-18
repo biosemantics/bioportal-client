@@ -25,7 +25,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
 
-import edu.arizona.biosemantics.bioportal.client.log.LogLevel;
+import edu.arizona.biosemantics.common.log.LogLevel;
 import edu.arizona.biosemantics.bioportal.model.Ontology;
 import edu.arizona.biosemantics.bioportal.model.ProvisionalClass;
 import edu.arizona.biosemantics.bioportal.model.Search;
