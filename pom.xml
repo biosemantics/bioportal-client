@@ -82,7 +82,7 @@
 		<dependency>
 			<groupId>edu.arizona.biosemantics.common</groupId>
 			<artifactId>log</artifactId>
-			<version>0.0.3-SNAPSHOT-debug</version>
+			<version>0.0.4-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
